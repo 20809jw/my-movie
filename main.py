@@ -96,8 +96,8 @@ numeric_columns = [
 for col in numeric_columns:
     df[col] = pd.to_numeric(df[col], errors="coerce")
 
-# 순위 기준 재정렬
-df = df.sort_values("rank")
+# 1위(높은 순위)부터 정렬
+df = df.sort_values("rank", ascending=True)
 
 # 1위 영화 지표 카드 (Metrics)
 top_1 = df.iloc[0]
@@ -117,16 +117,16 @@ with col3:
 
 st.divider()
 
-# 관객수 상위 5편 막대그래프
-st.subheader("📊 관객수 상위 5개 영화")
-top_5_df = df.head(5)
+# 관객수 높은 순 (상위 5편) 막대그래프
+st.subheader("📊 관객수 상위 5개 영화 (관객수 높은 순)")
+top_5_df = df.sort_values("audiCnt", ascending=False).head(5)
 
 # Streamlit 내장 막대그래프 활용
 st.bar_chart(data=top_5_df, x="movieNm", y="audiCnt", color="#FF4B4B")
 
 st.divider()
 
-# 박스오피스 전체 순위 표
+# 박스오피스 전체 순위 표 (1위부터 높은 순으로 표시)
 st.subheader("📋 박스오피스 전체 순위")
 
 # 표 출력을 위한 컬럼 재구성 및 명칭 변경
