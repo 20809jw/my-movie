@@ -44,7 +44,7 @@ def fetch_daily_boxoffice(api_key, target_date):
 
 
 # --- 앱 화면 구현 ---
-st.title("🎬 어제 일별 박스오피스 순위")
+st.title("🎬 어제 일별 박스오피스 (관객수 높은 순)")
 
 # Streamlit Secrets에서 API 키 불러오기
 if "KOBIS_KEY" not in st.secrets:
@@ -96,12 +96,12 @@ numeric_columns = [
 for col in numeric_columns:
     df[col] = pd.to_numeric(df[col], errors="coerce")
 
-# 1위(높은 순위)부터 정렬
-df = df.sort_values("rank", ascending=True)
+# 🔥 핵심: 관객수가 높은 순서(내림차순)로 데이터 정렬
+df = df.sort_values("audiCnt", ascending=False)
 
 # 1위 영화 지표 카드 (Metrics)
 top_1 = df.iloc[0]
-st.subheader(f"🥇 1위: {top_1['movieNm']}")
+st.subheader(f"🥇 관객수 1위: {top_1['movieNm']}")
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -117,17 +117,21 @@ with col3:
 
 st.divider()
 
-# 관객수 높은 순 (상위 5편) 막대그래프
-st.subheader("📊 관객수 상위 5개 영화 (관객수 높은 순)")
-top_5_df = df.sort_values("audiCnt", ascending=False).head(5)
+# 관객수 높은 순 상위 5편 추출
+top_5_df = df.head(5).copy()
 
-# Streamlit 내장 막대그래프 활용
+# 차트에서 영화 이름이 가나다순으로 재정렬되는 것을 막고 관객수 순서를 유지하도록 설정
+top_5_df["movieNm"] = pd.Categorical(
+    top_5_df["movieNm"], categories=top_5_df["movieNm"], ordered=True
+)
+
+st.subheader("📊 관객수 상위 5개 영화 (관객수 높은 순)")
 st.bar_chart(data=top_5_df, x="movieNm", y="audiCnt", color="#FF4B4B")
 
 st.divider()
 
-# 박스오피스 전체 순위 표 (1위부터 높은 순으로 표시)
-st.subheader("📋 박스오피스 전체 순위")
+# 박스오피스 전체 표 (관객수 높은 순 표시)
+st.subheader("📋 전체 순위 (관객수 높은 순)")
 
 # 표 출력을 위한 컬럼 재구성 및 명칭 변경
 display_df = df[["rank", "movieNm", "openDt", "audiCnt", "audiAcc", "scrnCnt"]].copy()
@@ -140,7 +144,7 @@ display_df.columns = [
     "스크린수",
 ]
 
-# 화면 출력
+# 화면 출력 (관객수 높은 순서가 유지된 채 표시됩니다)
 st.dataframe(
     display_df,
     use_container_width=True,
